@@ -1,18 +1,34 @@
-import { Controller, Post } from '@nestjs/common';
+// auth.controller.ts
+
+import { Controller, Post, Body, Res, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { Body } from '@nestjs/common';
+import { Response } from 'express'; // Import Express Response
+import { successResponse } from '../helpers/response.utils'; // Hanya helper untuk success response
+
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-    @Post('/signup')
-    signUp(@Body() authCredentialsDto: AuthCredentialsDto): Promise<void> {
-        return this.authService.signUp(authCredentialsDto);
-    }
+  @Post('/signup')
+  async signUp(
+    @Body() authCredentialsDto: AuthCredentialsDto,
+    @Res() res: Response,
+  ): Promise<Response> {
+    await this.authService.signUp(authCredentialsDto);
+    return res.status(HttpStatus.CREATED).json(
+      successResponse('Signup berhasil', {})
+    );
+  }
 
-    @Post('/signin')
-    signIn(@Body() authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string }> {
-        return this.authService.signIn(authCredentialsDto);
-    }
+  @Post('/signin')
+  async signIn(
+    @Body() authCredentialsDto: AuthCredentialsDto,
+    @Res() res: Response,
+  ): Promise<Response> {
+    const accessToken = await this.authService.signIn(authCredentialsDto); 
+    return res.status(HttpStatus.OK).json(
+      successResponse('Signin berhasil', { accessToken })
+    );
+  }
 }

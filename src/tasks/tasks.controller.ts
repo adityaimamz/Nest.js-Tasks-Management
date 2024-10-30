@@ -1,69 +1,89 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  Param,
-  Patch,
   Post,
+  Body,
+  Param,
+  Delete,
+  Patch,
   Query,
+  Res,
+  HttpStatus,
   UseGuards,
 } from '@nestjs/common';
+import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
-import { TaskStatus } from './task-status.enum';
-import { Task } from './task.entity';
+import { Response } from 'express';
+import { successResponse } from '../helpers/response.utils';
+import { GetUser } from '../auth/get-user.decorator'; // Import decorator
+import { User } from '../auth/user.entity'; // Import User entity
 import { AuthGuard } from '@nestjs/passport';
-import { TasksService } from './tasks.service';
-import { User } from '../auth/user.entity';
-import { GetUser } from '../auth/get-user.decorator';
-import { Logger } from '@nestjs/common';
 
 @Controller('tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
-  private logger = new Logger('TasksController');
   constructor(private tasksService: TasksService) {}
 
   @Get()
-  getTasks(
+  async getTasks(
     @Query() filterDto: GetTasksFilterDto,
-    @GetUser() user: User,
-  ): Promise<Task[]> {
-    this.logger.verbose(
-      `User "${user.username}" retrieving all tasks. Filters: ${JSON.stringify(
-        filterDto,
-      )}`,
+    @GetUser() user: User, // Ambil user dari request
+    @Res() res: Response,
+  ): Promise<Response> {
+    const tasks = await this.tasksService.getTasks(filterDto, user);
+    return res.status(HttpStatus.OK).json(
+      successResponse('Tasks retrieved successfully', { tasks })
     );
-    return this.tasksService.getTasks(filterDto, user);
   }
 
   @Get('/:id')
-  getTaskById(@Param('id') id: string, @GetUser() user: User): Promise<Task> {
-    return this.tasksService.getTaskById(id, user);
+  async getTaskById(
+    @Param('id') id: string,
+    @GetUser() user: User, // Ambil user dari request
+    @Res() res: Response,
+  ): Promise<Response> {
+    const task = await this.tasksService.getTaskById(id, user);
+    return res.status(HttpStatus.OK).json(
+      successResponse('Task retrieved successfully', { task })
+    );
   }
 
   @Post()
-  createTask(
+  async createTask(
     @Body() createTaskDto: CreateTaskDto,
     @GetUser() user: User,
-  ): Promise<Task> {
-    return this.tasksService.createTask(createTaskDto, user);
+    @Res() res: Response,
+  ): Promise<Response> {
+    const task = await this.tasksService.createTask(createTaskDto, user);
+    return res.status(HttpStatus.CREATED).json(
+      successResponse('Task created successfully', { task })
+    );
   }
 
   @Delete('/:id')
-  deleteTask(@Param('id') id: string, @GetUser() user: User): Promise<void> {
-    return this.tasksService.deleteTask(id, user);
+  async deleteTask(
+    @Param('id') id: string,
+    @GetUser() user: User, // Ambil user dari request
+    @Res() res: Response,
+  ): Promise<Response> {
+    await this.tasksService.deleteTask(id, user);
+    return res.status(HttpStatus.OK).json(
+      successResponse('Task deleted successfully', {})
+    );
   }
 
   @Patch('/:id/status')
-  updateTaskStatus(
+  async updateTaskStatus(
     @Param('id') id: string,
     @Body() updateTaskStatusDto: UpdateTaskStatusDto,
-    @GetUser() user: User,
-  ): Promise<Task> {
-    const { status } = updateTaskStatusDto;
-    return this.tasksService.updateTaskStatus(id, status, user);
+    @GetUser() user: User, // Ambil user dari request
+    @Res() res: Response,
+  ): Promise<Response> {
+    const task = await this.tasksService.updateTaskStatus(id, updateTaskStatusDto, user);
+    return res.status(HttpStatus.OK).json(
+      successResponse('Task status updated successfully', { task })
+    );
   }
 }
