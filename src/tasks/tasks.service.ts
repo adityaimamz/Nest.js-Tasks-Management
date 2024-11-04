@@ -8,6 +8,7 @@ import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { Task } from './task.entity';
 import { User } from '../auth/user.entity';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
+import { PaginationResult } from 'src/helpers/pagination.utils';
 
 @Injectable()
 export class TasksService {
@@ -16,8 +17,13 @@ export class TasksService {
     private taskRepository: TasksRepository,
   ) {}
 
-  async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
-    return this.taskRepository.getTasks(filterDto, user);
+  async getTasks(
+    filterDto: GetTasksFilterDto,
+    user: User,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<PaginationResult<Task>> {
+    return this.taskRepository.getTasks(filterDto, user, page, limit);
   }
 
   async getTaskById(id: string, user: User): Promise<Task> {

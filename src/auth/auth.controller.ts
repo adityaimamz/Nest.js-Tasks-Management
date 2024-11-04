@@ -3,12 +3,12 @@
 import { Controller, Post, Body, Res, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { Response } from 'express'; // Import Express Response
-import { successResponse } from '../helpers/response.utils'; // Hanya helper untuk success response
+import { Response } from 'express'; 
+import { successResponse } from '../helpers/response.utils';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   @Post('/signup')
   async signUp(

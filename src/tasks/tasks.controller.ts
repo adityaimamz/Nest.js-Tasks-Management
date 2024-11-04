@@ -29,10 +29,12 @@ export class TasksController {
   @Get()
   async getTasks(
     @Query() filterDto: GetTasksFilterDto,
-    @GetUser() user: User, // Ambil user dari request
+    @GetUser() user: User,
     @Res() res: Response,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10
   ): Promise<Response> {
-    const tasks = await this.tasksService.getTasks(filterDto, user);
+    const tasks = await this.tasksService.getTasks(filterDto, user, page, limit);
     return res.status(HttpStatus.OK).json(
       successResponse('Tasks retrieved successfully', { tasks })
     );
@@ -65,7 +67,7 @@ export class TasksController {
   @Delete('/:id')
   async deleteTask(
     @Param('id') id: string,
-    @GetUser() user: User, // Ambil user dari request
+    @GetUser() user: User,
     @Res() res: Response,
   ): Promise<Response> {
     await this.tasksService.deleteTask(id, user);
@@ -78,7 +80,7 @@ export class TasksController {
   async updateTaskStatus(
     @Param('id') id: string,
     @Body() updateTaskStatusDto: UpdateTaskStatusDto,
-    @GetUser() user: User, // Ambil user dari request
+    @GetUser() user: User, 
     @Res() res: Response,
   ): Promise<Response> {
     const task = await this.tasksService.updateTaskStatus(id, updateTaskStatusDto, user);
